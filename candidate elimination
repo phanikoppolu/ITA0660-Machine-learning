@@ -1,0 +1,19 @@
+import pandas as pd
+import numpy as np
+
+# Training Data
+data_list = [
+    ['Sunny', 'Warm', 'Normal', 'Strong', 'Warm', 'Same', 'Yes'],
+    ['Sunny', 'Warm', 'High', 'Strong', 'Warm', 'Same', 'Yes'],
+    ['Rainy', 'Cold', 'High', 'Strong', 'Warm', 'Change', 'No'],
+    ['Sunny', 'Warm', 'High', 'Strong', 'Cool', 'Change', 'Yes']
+]
+…    if row != ['?' for i in range(len(specific_h))]:
+        gh.append(row)
+
+print("\nFinal Specific Hypothesis (S):")
+print(specific_h)
+
+print("\nFinal General Hypothesis (G):")
+for row in gh:
+    print(row)
