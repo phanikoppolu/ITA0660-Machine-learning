@@ -1,0 +1,111 @@
+# Artificial Neural Network using Backpropagation
+# Dataset: make_moons
+
+import numpy as np
+import matplotlib.pyplot as plt
+from sklearn.datasets import make_moons
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+
+# Generate Dataset
+X, y = make_moons(n_samples=500, noise=0.2, random_state=42)
+
+# Split Dataset
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.2, random_state=42
+)
+
+# Feature Scaling
+scaler = StandardScaler()
+X_train = scaler.fit_transform(X_train)
+X_test = scaler.transform(X_test)
+
+# Neural Network Parameters
+input_size = 2
+hidden_size = 5
+output_size = 1
+learning_rate = 0.1
+epochs = 5000
+
+# Initialize Weights and Biases
+np.random.seed(42)
+
+W1 = np.random.randn(input_size, hidden_size)
+b1 = np.zeros((1, hidden_size))
+
+W2 = np.random.randn(hidden_size, output_size)
+b2 = np.zeros((1, output_size))
+
+# Sigmoid Activation Function
+def sigmoid(x):
+    return 1 / (1 + np.exp(-x))
+
+# Derivative of Sigmoid
+def sigmoid_derivative(x):
+    return x * (1 - x)
+
+# Training using Backpropagation
+for epoch in range(epochs):
+
+    # Forward Propagation
+    hidden_input = np.dot(X_train, W1) + b1
+    hidden_output = sigmoid(hidden_input)
+
+    final_input = np.dot(hidden_output, W2) + b2
+    predicted_output = sigmoid(final_input)
+
+    # Calculate Error
+    error = y_train.reshape(-1,1) - predicted_output
+
+    # Backpropagation
+    d_output = error * sigmoid_derivative(predicted_output)
+
+    error_hidden = d_output.dot(W2.T)
+    d_hidden = error_hidden * sigmoid_derivative(hidden_output)
+
+    # Update Weights and Biases
+    W2 += hidden_output.T.dot(d_output) * learning_rate
+    b2 += np.sum(d_output, axis=0, keepdims=True) * learning_rate
+
+    W1 += X_train.T.dot(d_hidden) * learning_rate
+    b1 += np.sum(d_hidden, axis=0, keepdims=True) * learning_rate
+
+    if epoch % 500 == 0:
+        loss = np.mean(np.square(error))
+        print(f"Epoch {epoch}, Loss = {loss:.4f}")
+
+# Testing Phase
+hidden_test = sigmoid(np.dot(X_test, W1) + b1)
+output_test = sigmoid(np.dot(hidden_test, W2) + b2)
+
+predictions = (output_test > 0.5).astype(int)
+
+accuracy = np.mean(predictions.flatten() == y_test)
+
+print("\nTest Accuracy:", accuracy * 100, "%")
+
+# Decision Boundary Visualization
+def plot_decision_boundary(X, y):
+    x_min, x_max = X[:,0].min()-1, X[:,0].max()+1
+    y_min, y_max = X[:,1].min()-1, X[:,1].max()+1
+
+    xx, yy = np.meshgrid(
+        np.arange(x_min, x_max, 0.02),
+        np.arange(y_min, y_max, 0.02)
+    )
+
+    grid = np.c_[xx.ravel(), yy.ravel()]
+    grid_scaled = scaler.transform(grid)
+
+    hidden = sigmoid(np.dot(grid_scaled, W1) + b1)
+    output = sigmoid(np.dot(hidden, W2) + b2)
+
+    Z = (output > 0.5).astype(int)
+    Z = Z.reshape(xx.shape)
+
+    plt.contourf(xx, yy, Z, alpha=0.4)
+    plt.scatter(X[:,0], X[:,1], c=y, edgecolors='k')
+    plt.title("ANN Decision Boundary")
+    plt.show()
+
+plot_decision_boundary(X, y)
